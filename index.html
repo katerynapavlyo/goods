@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Каталог техніки</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f7f6; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+    .card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .title { color: #2c3e50; cursor: pointer; text-decoration: underline; margin-bottom: 5px; }
+    .price { color: #27ae60; font-weight: bold; }
+    .btn { margin-top: 10px; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 8px; max-width: 400px; position: relative; width: 100%; }
+    .close { position: absolute; top: 10px; right: 15px; font-size: 22px; cursor: pointer; border: none; background: none; }
+  </style>
+</head>
+<body>
+  <h2>Каталог техніки <button class="btn" style="background:#3498db; color:#fff" onclick="editProduct()">+ Додати</button></h2>
+  <div class="grid" id="catalog"></div>
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <button class="close" onclick="closeModal()">&times;</button>
+      <h3 id="mTitle"></h3>
+      <p id="mPrice" class="price" style="margin: 10px 0;"></p>
+      <p id="mDesc"></p>
+    </div>
+  </div>
+  <script>
+    let products = JSON.parse(localStorage.getItem('tech_short')) || [
+      { id: 1, title: "Смартфон", price: 15000, desc: "Флагманський смартфон із яскравим екраном, потужним процесором та відмінною камерою для чітких фото за будь-якого освітлення." },
+      { id: 2, title: "Ноутбук", price: 30000, desc: "Легкий та продуктивний ноутбук із високою автономністю, ідеальний для роботи, навчання та розваг у дорозі." },
+      { id: 3, title: "Навушники", price:1500, desc:"Бездротові навушники з якісним об'ємним звуком, активним шумозаглушенням та тривалим часом роботи від акумулятора."}
+    ];
+    function render() {
+      localStorage.setItem('tech_short', JSON.stringify(products));
+      document.getElementById('catalog').innerHTML = products.map(p => `
+        <div class="card">
+          <h3 class="title" onclick="showDetail(${p.id})">${p.title}</h3>
+          <p class="price">${p.price} грн</p>
+          <button class="btn" style="background:#f39c12; color:#fff" onclick="editProduct(${p.id})">Редагувати</button>
+          <button class="btn" style="background:#e74c3c; color:#fff" onclick="delProduct(${p.id})">X</button>
+        </div>
+      `).join('');
+    }
+    function showDetail(id) {
+      const p = products.find(item => item.id === id);
+      document.getElementById('mTitle').innerText = p.title;
+      document.getElementById('mPrice').innerText = p.price + ' грн';
+      document.getElementById('mDesc').innerText = p.desc;
+      document.getElementById('modal').style.display = 'flex';
+    }
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+    function editProduct(id = null) {
+      const p = products.find(item => item.id === id) || { title: '', price: '', desc: '' };
+      const title = prompt('Назва товару:', p.title);
+      if (!title) return;
+      const price = prompt('Ціна (грн):', p.price);
+      const desc = prompt('Опис товару:', p.desc);
+
+      if (id) {
+        Object.assign(p, { title, price, desc });
+      } else {
+        products.push({ id: Date.now(), title, price, desc });
+      }
+      render();
+    }
+    function delProduct(id) {
+      products = products.filter(p => p.id !== id);
+      render();
+    }
+    render();
+  </script>
+</body>
+</html>
